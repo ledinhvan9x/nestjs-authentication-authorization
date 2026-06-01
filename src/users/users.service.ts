@@ -16,10 +16,16 @@ export class UsersService {
       userId: 2,
       username: 'maria',
       password: 'guess',
+      roles: ['user'],
     },
   ];
 
   async findOne(username: string): Promise<User | undefined> {
     return this.users.find((user) => user.username === username);
+  }
+
+  async create(user: any) {
+    this.users.push(user);
+    return user;
   }
 }
