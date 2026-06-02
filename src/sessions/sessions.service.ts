@@ -34,4 +34,19 @@ export class SessionsService {
       refreshTokenHash: hash,
     });
   }
+
+  async findByUserId(userId: string) {
+    return this.sessionRepo.find({
+      where: { userId },
+      order: {
+        createdAt: 'DESC',
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        userId: true,
+        revokedAt: true,
+      },
+    });
+  }
 }
