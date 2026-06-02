@@ -17,7 +17,7 @@ export class SessionsService {
     });
   }
 
-  async revoke(sessionId: number) {
+  async revoke(sessionId: string) {
     return this.sessionRepo.update(sessionId, {
       revokedAt: new Date(),
     });

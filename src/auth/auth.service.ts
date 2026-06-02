@@ -82,6 +82,10 @@ export class AuthService {
 
       const session = await this.sessionsService.findById(payload.sessionId);
 
+      if (session.revokedAt) {
+        throw new UnauthorizedException();
+      }
+
       if (!session || session.revokedAt) {
         throw new UnauthorizedException();
       }
@@ -120,7 +124,7 @@ export class AuthService {
     }
   }
 
-  async logout(sessionId: number) {
+  async logout(sessionId: string) {
     await this.sessionsService.revoke(sessionId);
 
     return {
