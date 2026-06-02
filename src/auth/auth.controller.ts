@@ -43,4 +43,19 @@ export class AuthController {
   logout(@Req() req: any) {
     return this.authService.logout(req.user.sub);
   }
+
+  @Public()
+  @Post('forgot-password')
+  forgotPassword(@Body('username') username: string) {
+    return this.authService.forgotPassword(username);
+  }
+
+  @Public()
+  @Post('reset-password')
+  resetPassword(
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
+  ) {
+    return this.authService.resetPassword(token, newPassword);
+  }
 }

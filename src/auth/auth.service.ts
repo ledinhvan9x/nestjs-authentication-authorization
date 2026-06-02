@@ -7,6 +7,8 @@ import {
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,11 +24,9 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     return this.usersService.create({
-      userId: Date.now(),
       username,
       password: hashedPassword,
-      roles: ['user'],
-      refreshToken: null,
+      roles: ['admin'],
     });
   }
 
@@ -44,7 +44,7 @@ export class AuthService {
     }
 
     const payload = {
-      sub: user.userId,
+      sub: user.id,
       username: user.username,
       roles: user.roles,
     };
@@ -57,7 +57,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    user.refreshToken = refreshToken;
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
 
     return {
       access_token: accessToken,
@@ -70,7 +70,7 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync(refreshToken);
 
       const user = await this.usersService.findById(payload.sub);
-
+      console.log(user, !user);
       if (!user) {
         throw new UnauthorizedException();
       }
@@ -80,7 +80,7 @@ export class AuthService {
       }
 
       const newPayload = {
-        sub: user.userId,
+        sub: user.id,
         username: user.username,
         roles: user.roles,
       };
@@ -105,14 +105,49 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    const user = await this.usersService.findById(userId);
-
-    if (user) {
-      user.refreshToken = null;
-    }
+    await this.usersService.updateRefreshToken(userId, null);
 
     return {
       message: 'Logged out',
     };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.usersService.findByResetToken(token);
+
+    if (
+      !user ||
+      user.resetToken !== token ||
+      user.resetTokenExpires < new Date()
+    ) {
+      throw new UnauthorizedException();
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.usersService.updatePasswordAndClearReset(
+      user.id,
+      hashedPassword,
+    );
+
+    return { message: 'Password updated' };
+  }
+
+  async forgotPassword(username: string) {
+    const user = await this.usersService.findOne(username);
+
+    if (!user) {
+      return { message: 'If user exists, reset link sent' };
+    }
+
+    const token = randomBytes(32).toString('hex');
+
+    await this.usersService.updateResetToken(
+      user.id,
+      token,
+      new Date(Date.now() + 15 * 60 * 1000),
+    );
+
+    return { reset_token: token };
   }
 }
