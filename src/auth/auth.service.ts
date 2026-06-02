@@ -26,6 +26,7 @@ export class AuthService {
       username,
       password: hashedPassword,
       roles: ['user'],
+      refreshToken: null,
     });
   }
 
@@ -56,6 +57,8 @@ export class AuthService {
       expiresIn: '7d',
     });
 
+    user.refreshToken = refreshToken;
+
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -66,10 +69,20 @@ export class AuthService {
     try {
       const payload = await this.jwtService.verifyAsync(refreshToken);
 
+      const user = await this.usersService.findById(payload.sub);
+
+      if (!user) {
+        throw new UnauthorizedException();
+      }
+
+      if (user.refreshToken !== refreshToken) {
+        throw new UnauthorizedException();
+      }
+
       const newPayload = {
-        sub: payload.sub,
-        username: payload.username,
-        roles: payload.roles,
+        sub: user.userId,
+        username: user.username,
+        roles: user.roles,
       };
 
       const accessToken = await this.jwtService.signAsync(newPayload, {
@@ -80,6 +93,8 @@ export class AuthService {
         expiresIn: '7d',
       });
 
+      user.refreshToken = newRefreshToken;
+
       return {
         access_token: accessToken,
         refresh_token: newRefreshToken,
@@ -87,5 +102,17 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException();
     }
+  }
+
+  async logout(userId: number) {
+    const user = await this.usersService.findById(userId);
+
+    if (user) {
+      user.refreshToken = null;
+    }
+
+    return {
+      message: 'Logged out',
+    };
   }
 }

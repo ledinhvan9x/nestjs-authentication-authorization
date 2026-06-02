@@ -15,4 +15,8 @@ export class UsersService {
     this.users.push(user);
     return user;
   }
+
+  async findById(userId: number) {
+    return this.users.find((u) => u.userId === userId);
+  }
 }

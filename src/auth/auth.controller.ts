@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Get,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from '../decorators/public.decorator';
@@ -36,5 +37,10 @@ export class AuthController {
   @Public()
   refresh(@Body() body: { refresh_token: string }) {
     return this.authService.refresh(body.refresh_token);
+  }
+
+  @Post('logout')
+  logout(@Req() req: any) {
+    return this.authService.logout(req.user.sub);
   }
 }
