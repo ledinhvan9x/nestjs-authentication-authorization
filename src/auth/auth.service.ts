@@ -85,7 +85,7 @@ export class AuthService {
       if (session.revokedAt) {
         throw new UnauthorizedException();
       }
-
+      console.log('token access');
       if (!session || session.revokedAt) {
         throw new UnauthorizedException();
       }
