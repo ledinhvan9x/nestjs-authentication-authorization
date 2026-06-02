@@ -8,12 +8,14 @@ import { UsersService } from '../users/users.service';
 import { randomBytes } from 'crypto';
 import { TokenUtil } from './utils/token.util';
 import { PasswordUtil } from './utils/password.util';
+import { SessionsService } from 'src/sessions/sessions.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private tokenUtil: TokenUtil,
+    private readonly sessionsService: SessionsService,
   ) {}
 
   async register(username: string, password: string) {
@@ -43,19 +45,30 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // 1. CREATE SESSION FIRST
+    const session = await this.sessionsService.create({
+      userId: user.id,
+    });
+
+    // 2. BUILD PAYLOAD WITH sessionId
     const payload = {
       sub: user.id,
+      sessionId: session.id,
       username: user.username,
       roles: user.roles,
     };
 
+    // 3. GENERATE TOKENS
     const accessToken = await this.tokenUtil.generateAccessToken(payload);
-
     const refreshToken = await this.tokenUtil.generateRefreshToken(payload);
 
+    // 4. HASH + STORE REFRESH TOKEN
     const hashedRefreshToken = await PasswordUtil.hash(refreshToken);
 
-    await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
+    await this.sessionsService.updateRefreshToken(
+      session.id,
+      hashedRefreshToken,
+    );
 
     return {
       access_token: accessToken,
@@ -67,15 +80,15 @@ export class AuthService {
     try {
       const payload = await this.tokenUtil.verifyAsyncToken(refreshToken);
 
-      const user = await this.usersService.findById(payload.sub);
+      const session = await this.sessionsService.findById(payload.sessionId);
 
-      if (!user || !user.refreshToken) {
+      if (!session || session.revokedAt) {
         throw new UnauthorizedException();
       }
 
       const isValid = await PasswordUtil.compare(
         refreshToken,
-        user.refreshToken,
+        session.refreshTokenHash,
       );
 
       if (!isValid) {
@@ -83,9 +96,10 @@ export class AuthService {
       }
 
       const newPayload = {
-        sub: user.id,
-        username: user.username,
-        roles: user.roles,
+        sub: payload.sub,
+        sessionId: session.id,
+        username: payload.username,
+        roles: payload.roles,
       };
 
       const accessToken = await this.tokenUtil.generateAccessToken(newPayload);
@@ -93,9 +107,9 @@ export class AuthService {
       const newRefreshToken =
         await this.tokenUtil.generateRefreshToken(newPayload);
 
-      const hashed = await PasswordUtil.hash(refreshToken);
+      const hashed = await PasswordUtil.hash(newRefreshToken);
 
-      await this.usersService.updateRefreshToken(user.id, hashed);
+      await this.sessionsService.updateRefreshToken(session.id, hashed);
 
       return {
         access_token: accessToken,
@@ -106,8 +120,8 @@ export class AuthService {
     }
   }
 
-  async logout(userId: number) {
-    await this.usersService.updateRefreshToken(userId, null);
+  async logout(sessionId: number) {
+    await this.sessionsService.revoke(sessionId);
 
     return {
       message: 'Logged out',
