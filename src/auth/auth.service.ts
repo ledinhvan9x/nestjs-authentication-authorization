@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -30,12 +31,16 @@ export class AuthService {
 
   async login(username: string, password: string) {
     const user = await this.usersService.findOne(username);
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return null;
+
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const payload = {
       sub: user.userId,
@@ -43,8 +48,44 @@ export class AuthService {
       roles: user.roles,
     };
 
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
+
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
+  }
+
+  async refresh(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken);
+
+      const newPayload = {
+        sub: payload.sub,
+        username: payload.username,
+        roles: payload.roles,
+      };
+
+      const accessToken = await this.jwtService.signAsync(newPayload, {
+        expiresIn: '15m',
+      });
+
+      const newRefreshToken = await this.jwtService.signAsync(newPayload, {
+        expiresIn: '7d',
+      });
+
+      return {
+        access_token: accessToken,
+        refresh_token: newRefreshToken,
+      };
+    } catch {
+      throw new UnauthorizedException();
+    }
   }
 }

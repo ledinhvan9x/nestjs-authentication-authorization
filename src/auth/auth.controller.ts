@@ -31,4 +31,10 @@ export class AuthController {
   findAll() {
     return ['This done but empty'];
   }
+
+  @Post('refresh')
+  @Public()
+  refresh(@Body() body: { refresh_token: string }) {
+    return this.authService.refresh(body.refresh_token);
+  }
 }
