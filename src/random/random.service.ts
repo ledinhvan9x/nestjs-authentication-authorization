@@ -5,7 +5,6 @@ import { UpdateRandomDto } from './dto/update-random.dto';
 @Injectable()
 export class RandomService {
   create(createRandomDto: CreateRandomDto) {
-    console.log(createRandomDto);
     return 'This action adds a new random';
   }
 
@@ -18,7 +17,6 @@ export class RandomService {
   }
 
   update(id: number, updateRandomDto: UpdateRandomDto) {
-    console.log(updateRandomDto);
     return `This action updates a #${id} random`;
   }
 
