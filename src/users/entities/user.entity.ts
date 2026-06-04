@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
+import { Role } from '../../roles/entities/role.entity';
 
 @Entity()
 export class User {
@@ -13,6 +20,12 @@ export class User {
 
   @Column('simple-array')
   roles: string[];
+
+  @ManyToMany(() => Role)
+  @JoinTable({
+    name: 'user_roles',
+  })
+  roleEntities: Role[];
 
   @Column({ nullable: true })
   resetToken: string;

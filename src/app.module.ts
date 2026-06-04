@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // import { APP_GUARD } from '@nestjs/core';
 // import { RolesGuard } from './guards/roles.guard';
 import { SessionsModule } from './sessions/sessions.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SessionsModule } from './sessions/sessions.module';
       synchronize: true,
     }),
     SessionsModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
