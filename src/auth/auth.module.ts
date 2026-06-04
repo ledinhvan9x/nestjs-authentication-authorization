@@ -14,7 +14,6 @@ import { SessionsModule } from 'src/sessions/sessions.module';
     UsersModule,
     SessionsModule,
     JwtModule.register({
-      global: true,
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },
     }),
