@@ -13,12 +13,24 @@ export class UsersService {
   async findOne(username: string) {
     return this.userRepo.findOne({
       where: { username },
+      relations: {
+        roleEntities: {
+          permissions: true,
+        },
+      },
     });
+  }
+
+  async saveUser(user: User) {
+    return this.userRepo.save(user);
   }
 
   async findById(id: string) {
     return this.userRepo.findOne({
       where: { id },
+      relations: {
+        roleEntities: true,
+      },
     });
   }
 
