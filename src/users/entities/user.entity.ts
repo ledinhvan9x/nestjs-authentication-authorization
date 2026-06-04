@@ -4,6 +4,8 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../../roles/entities/role.entity';
 
@@ -29,4 +31,10 @@ export class User {
 
   @Column({ nullable: true })
   resetTokenExpires: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
