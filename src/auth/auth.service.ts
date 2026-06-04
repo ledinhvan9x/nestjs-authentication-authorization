@@ -124,8 +124,8 @@ export class AuthService {
     }
   }
 
-  async logout(sessionId: string) {
-    await this.sessionsService.revoke(sessionId);
+  async logout(user: any) {
+    await this.sessionsService.revoke(user.sessionId);
 
     return {
       message: 'Logged out',

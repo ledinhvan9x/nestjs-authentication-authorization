@@ -5,10 +5,10 @@ import {
   HttpCode,
   HttpStatus,
   Get,
-  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from '../decorators/public.decorator';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -40,8 +40,8 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Req() req: any) {
-    return this.authService.logout(req.user.sessionId);
+  logout(@CurrentUser() user: any) {
+    return this.authService.logout(user);
   }
 
   @Public()
