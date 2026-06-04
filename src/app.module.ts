@@ -10,9 +10,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SessionsModule } from './sessions/sessions.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { Role } from './roles/entities/role.entity';
+import { Permission } from './permissions/entities/permission.entity';
+import { SeedService } from './seeds/seed.service';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Role, Permission]),
     AuthModule,
     UsersModule,
     RandomModule,
@@ -31,6 +35,6 @@ import { PermissionsModule } from './permissions/permissions.module';
     PermissionsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SeedService],
 })
 export class AppModule {}
