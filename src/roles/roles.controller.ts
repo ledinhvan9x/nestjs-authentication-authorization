@@ -45,4 +45,12 @@ export class RolesController {
 
     return this.userService.saveUser(user);
   }
+  @Public()
+  @Post(':roleId/permissions/:permissionId')
+  assignPermission(
+    @Param('roleId') roleId: string,
+    @Param('permissionId') permissionId: string,
+  ) {
+    return this.rolesService.assignPermission(roleId, permissionId);
+  }
 }

@@ -8,11 +8,13 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '../guards/auth.guard';
 import { TokenUtil } from './utils/token.util';
 import { SessionsModule } from 'src/sessions/sessions.module';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
   imports: [
     UsersModule,
     SessionsModule,
+    RolesModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },

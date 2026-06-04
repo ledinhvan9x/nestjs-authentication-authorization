@@ -9,6 +9,7 @@ import { randomBytes } from 'crypto';
 import { TokenUtil } from './utils/token.util';
 import { PasswordUtil } from './utils/password.util';
 import { SessionsService } from 'src/sessions/sessions.service';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private usersService: UsersService,
     private tokenUtil: TokenUtil,
     private readonly sessionsService: SessionsService,
+    private rolesService: RolesService,
   ) {}
 
   async register(username: string, password: string) {
@@ -24,17 +26,25 @@ export class AuthService {
       throw new ConflictException('Username already exists');
     }
     const hashedPassword = await PasswordUtil.hash(password);
+    const role = await this.rolesService.findByName('admin');
 
-    return this.usersService.create({
+    const user = await this.usersService.create({
       username,
       password: hashedPassword,
-      roles: ['admin'],
     });
+
+    user.roleEntities = [role];
+
+    await this.usersService.saveUser(user);
+
+    return user;
   }
 
   async login(username: string, password: string) {
     const user = await this.usersService.findOne(username);
-
+    const permissions = user.roleEntities.flatMap((role) =>
+      role.permissions.map((p) => p.name),
+    );
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -50,12 +60,16 @@ export class AuthService {
       userId: user.id,
     });
 
+    const roles = user.roleEntities.map((role) => role.name);
+    console.log('roles');
+    console.log(roles);
     // 2. BUILD PAYLOAD WITH sessionId
     const payload = {
       sub: user.id,
       sessionId: session.id,
       username: user.username,
-      roles: user.roles,
+      roles,
+      permissions,
     };
 
     // 3. GENERATE TOKENS

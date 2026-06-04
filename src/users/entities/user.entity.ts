@@ -18,9 +18,6 @@ export class User {
   @Column()
   password: string;
 
-  @Column('simple-array')
-  roles: string[];
-
   @ManyToMany(() => Role)
   @JoinTable({
     name: 'user_roles',

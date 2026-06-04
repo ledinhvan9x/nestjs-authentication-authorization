@@ -13,6 +13,11 @@ export class UsersService {
   async findOne(username: string) {
     return this.userRepo.findOne({
       where: { username },
+      relations: {
+        roleEntities: {
+          permissions: true,
+        },
+      },
     });
   }
 

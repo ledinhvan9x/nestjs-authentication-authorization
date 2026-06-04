@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // import { RolesGuard } from './guards/roles.guard';
 import { SessionsModule } from './sessions/sessions.module';
 import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RolesModule } from './roles/roles.module';
     }),
     SessionsModule,
     RolesModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
