@@ -7,6 +7,7 @@ import { RandomModule } from './random/random.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 // import { APP_GUARD } from '@nestjs/core';
 // import { RolesGuard } from './guards/roles.guard';
+import { SessionsModule } from './sessions/sessions.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

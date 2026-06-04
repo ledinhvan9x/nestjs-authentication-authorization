@@ -16,7 +16,7 @@ export class UsersService {
     });
   }
 
-  async findById(id: number) {
+  async findById(id: string) {
     return this.userRepo.findOne({
       where: { id },
     });
@@ -27,26 +27,20 @@ export class UsersService {
     return this.userRepo.save(newUser);
   }
 
-  async updateRefreshToken(id: number, refreshToken: string | null) {
-    return this.userRepo.update(id, {
-      refreshToken,
-    });
-  }
-
   async findByResetToken(token: string) {
     return this.userRepo.findOne({
       where: { resetToken: token },
     });
   }
 
-  async updateResetToken(userId: number, token: string, expires: Date) {
+  async updateResetToken(userId: string, token: string, expires: Date) {
     return this.userRepo.update(userId, {
       resetToken: token,
       resetTokenExpires: expires,
     });
   }
 
-  async updatePasswordAndClearReset(userId: number, hashedPassword: string) {
+  async updatePasswordAndClearReset(userId: string, hashedPassword: string) {
     return this.userRepo.update(userId, {
       password: hashedPassword,
       resetToken: null,
