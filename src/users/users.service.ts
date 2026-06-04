@@ -21,6 +21,10 @@ export class UsersService {
     });
   }
 
+  findAll() {
+    return this.userRepo.find();
+  }
+
   async saveUser(user: User) {
     return this.userRepo.save(user);
   }
@@ -58,5 +62,9 @@ export class UsersService {
       resetToken: null,
       resetTokenExpires: null,
     });
+  }
+
+  remove(id: string) {
+    return this.userRepo.delete(id);
   }
 }
