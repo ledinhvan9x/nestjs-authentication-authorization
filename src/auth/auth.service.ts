@@ -96,10 +96,6 @@ export class AuthService {
 
       const session = await this.sessionsService.findById(payload.sessionId);
 
-      if (session.revokedAt) {
-        throw new UnauthorizedException();
-      }
-
       if (!session || session.revokedAt) {
         throw new UnauthorizedException();
       }
