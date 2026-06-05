@@ -62,7 +62,7 @@ export class AuthService {
 
     const roles = user.roleEntities.map((role) => role.name);
     console.log('roles');
-    console.log(roles);
+    console.log(roles, permissions);
     // 2. BUILD PAYLOAD WITH sessionId
     const payload = {
       sub: user.id,
@@ -106,6 +106,7 @@ export class AuthService {
       );
 
       if (!isValid) {
+        await this.sessionsService.revoke(session.id);
         throw new UnauthorizedException();
       }
 
