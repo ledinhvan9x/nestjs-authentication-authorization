@@ -9,12 +9,14 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { RequestWithUser } from 'src/interfaces/request-with-user.interface';
+import { SessionsService } from 'src/sessions/sessions.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private reflector: Reflector,
+    private sessionService: SessionsService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -37,7 +39,11 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token);
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      // console.log(payload);
+      const session = await this.sessionService.findById(payload.sessionId);
+
+      if (!session || session.revokedAt) {
+        throw new UnauthorizedException();
+      }
       request['user'] = payload;
     } catch {
       throw new UnauthorizedException();
