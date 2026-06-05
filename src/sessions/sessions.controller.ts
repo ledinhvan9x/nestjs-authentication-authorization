@@ -9,11 +9,14 @@ import {
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { Audit } from 'src/decorators/audit.decorator';
+import { AuditAction } from 'src/enums/audit-action.enum';
 
 @Controller('sessions')
 export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
+  @Audit(AuditAction.GET_SESSIONS)
   @Get()
   async getSessions(@CurrentUser() user: any) {
     return this.sessionsService.findByUserId(user.sub);

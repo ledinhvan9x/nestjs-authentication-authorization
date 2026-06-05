@@ -1,5 +1,5 @@
 export enum AuditAction {
-  LOGIN = 'LOGIN',
+  GET_SESSIONS = 'GET_SESSIONS',
   LOGOUT = 'LOGOUT',
   LOGOUT_ALL = 'LOGOUT_ALL',
   REFRESH_TOKEN = 'REFRESH_TOKEN',
