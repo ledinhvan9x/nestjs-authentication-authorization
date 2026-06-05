@@ -11,7 +11,6 @@ import {
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
-import { Public } from 'src/decorators/public.decorator';
 import { Permissions } from 'src/decorators/permissions.decorator';
 import { PermissionsGuard } from 'src/guards/permission.guard';
 import { PermissionsEnum } from 'src/enums/permission.enum';
@@ -21,7 +20,6 @@ export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
   @Permissions(PermissionsEnum.USER_CREATE)
-  @Public()
   @Post()
   create(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionsService.create(createPermissionDto);
