@@ -13,6 +13,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { Role } from './roles/entities/role.entity';
 import { Permission } from './permissions/entities/permission.entity';
 import { SeedService } from './seeds/seed.service';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { SeedService } from './seeds/seed.service';
     SessionsModule,
     RolesModule,
     PermissionsModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeedService],
