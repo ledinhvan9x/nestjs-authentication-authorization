@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -150,7 +151,15 @@ export class AuthService {
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException('New password must be different');
+    }
+
     const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
 
     const isValid = await bcrypt.compare(dto.currentPassword, user.password);
 
