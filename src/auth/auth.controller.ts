@@ -59,4 +59,9 @@ export class AuthController {
   ) {
     return this.authService.resetPassword(token, newPassword);
   }
+
+  @Post('logout-all')
+  logoutAll(@CurrentUser() user: any) {
+    return this.authService.logoutAll(user);
+  }
 }

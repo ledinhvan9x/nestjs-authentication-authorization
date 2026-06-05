@@ -49,4 +49,8 @@ export class SessionsService {
       },
     });
   }
+
+  async revokeAllByUserId(userId: string) {
+    await this.sessionRepo.update({ userId }, { revokedAt: new Date() });
+  }
 }

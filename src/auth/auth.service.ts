@@ -186,4 +186,12 @@ export class AuthService {
 
     return { reset_token: token };
   }
+
+  async logoutAll(user: any) {
+    await this.sessionsService.revokeAllByUserId(user.sub);
+
+    return {
+      message: 'Logged out all devices',
+    };
+  }
 }
