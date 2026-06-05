@@ -25,4 +25,13 @@ export class Session {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ nullable: true })
+  userAgent: string;
+
+  @Column({ nullable: true })
+  ip: string;
+
+  @Column({ nullable: true })
+  deviceName: string;
 }
