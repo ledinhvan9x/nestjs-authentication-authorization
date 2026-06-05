@@ -11,6 +11,8 @@ import { PasswordUtil } from './utils/password.util';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { RolesService } from 'src/roles/roles.service';
 import { RedisService } from 'src/redis/redis.service';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -145,6 +147,28 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException();
     }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.usersService.findById(userId);
+
+    const isValid = await bcrypt.compare(dto.currentPassword, user.password);
+
+    if (!isValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+
+    user.password = passwordHash;
+
+    await this.usersService.saveUser(user);
+
+    await this.sessionsService.revokeAllByUserId(userId);
+
+    return {
+      message: 'Password changed successfully',
+    };
   }
 
   async logout(user: any) {

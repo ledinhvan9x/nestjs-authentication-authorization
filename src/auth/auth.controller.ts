@@ -6,10 +6,13 @@ import {
   HttpStatus,
   Get,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from '../decorators/public.decorator';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -38,6 +41,14 @@ export class AuthController {
   @Public()
   refresh(@Body() body: { refresh_token: string }) {
     return this.authService.refresh(body.refresh_token);
+  }
+
+  @Patch('change-password')
+  changePassword(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(user.sub, dto);
   }
 
   @Post('logout')
