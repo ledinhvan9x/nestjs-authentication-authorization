@@ -20,13 +20,9 @@ export class SessionsService {
   }
 
   async revoke(sessionId: string) {
-    // DB
     await this.sessionRepo.update(sessionId, {
       revokedAt: new Date(),
     });
-
-    // Redis
-    await this.redisService.del(`session:${sessionId}`);
   }
 
   async create(data: { userId: string; ip: string; userAgent: string }) {
