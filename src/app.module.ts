@@ -13,7 +13,6 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { Role } from './roles/entities/role.entity';
 import { Permission } from './permissions/entities/permission.entity';
 import { SeedService } from './seeds/seed.service';
-import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -34,7 +33,6 @@ import { RedisModule } from './redis/redis.module';
     SessionsModule,
     RolesModule,
     PermissionsModule,
-    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeedService],

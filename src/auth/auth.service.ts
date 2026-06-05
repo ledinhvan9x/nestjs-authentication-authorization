@@ -10,6 +10,7 @@ import { TokenUtil } from './utils/token.util';
 import { PasswordUtil } from './utils/password.util';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { RolesService } from 'src/roles/roles.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     private tokenUtil: TokenUtil,
     private readonly sessionsService: SessionsService,
     private rolesService: RolesService,
+    private redisService: RedisService,
   ) {}
 
   async register(username: string, password: string) {
@@ -64,10 +66,15 @@ export class AuthService {
       ip,
       userAgent,
     });
-
+    await this.redisService.set(
+      `session:${session.id}`,
+      {
+        userId: session.userId,
+        revokedAt: null,
+      },
+      60 * 60 * 24 * 7,
+    );
     const roles = user.roleEntities.map((role) => role.name);
-    console.log('roles');
-    console.log(roles, permissions);
     // 2. BUILD PAYLOAD WITH sessionId
     const payload = {
       sub: user.id,
@@ -142,6 +149,7 @@ export class AuthService {
 
   async logout(user: any) {
     await this.sessionsService.revoke(user.sessionId);
+    await this.redisService.del(`session:${user.sessionId}`);
 
     return {
       message: 'Logged out',
@@ -188,7 +196,15 @@ export class AuthService {
   }
 
   async logoutAll(user: any) {
+    // 1. revoke DB
+    const sessions = await this.sessionsService.findByUserId(user.sub);
+
     await this.sessionsService.revokeAllByUserId(user.sub);
+
+    // 2. clear Redis cache
+    for (const session of sessions) {
+      await this.redisService.del(`session:${session.id}`);
+    }
 
     return {
       message: 'Logged out all devices',

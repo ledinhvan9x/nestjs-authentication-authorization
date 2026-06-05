@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { RequestWithUser } from 'src/interfaces/request-with-user.interface';
 import { SessionsService } from 'src/sessions/sessions.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -17,6 +18,7 @@ export class AuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private reflector: Reflector,
     private sessionService: SessionsService,
+    private redisService: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,17 +36,33 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      // 💡 Here the JWT secret key that's used for verifying the payload
-      // is the key that was passed in the JwtModule
       const payload = await this.jwtService.verifyAsync(token);
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
-      const session = await this.sessionService.findById(payload.sessionId);
 
-      if (!session || session.revokedAt) {
+      const key = `session:${payload.sessionId}`;
+
+      let session = await this.redisService.get<{
+        userId: string;
+        revokedAt: Date;
+      }>(key);
+
+      // 🧠 fallback nếu Redis miss
+      if (!session) {
+        session = await this.sessionService.findById(payload.sessionId);
+
+        if (!session) {
+          throw new UnauthorizedException();
+        }
+
+        // refill cache
+        await this.redisService.set(key, session, 60 * 60 * 24 * 7);
+      }
+
+      // check revoke
+      if (session.revokedAt) {
         throw new UnauthorizedException();
       }
-      request['user'] = payload;
+
+      request.user = payload;
     } catch {
       throw new UnauthorizedException();
     }

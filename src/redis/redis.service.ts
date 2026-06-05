@@ -1,25 +1,45 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { REDIS_CLIENT } from './redis.module';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
 
 @Injectable()
-export class RedisService {
-  constructor(@Inject(REDIS_CLIENT) private redis: Redis) {}
+export class RedisService implements OnModuleDestroy {
+  private client: Redis;
 
-  get(key: string) {
-    return this.redis.get(key);
+  constructor() {
+    this.client = new Redis({
+      host: 'localhost',
+      port: 6379,
+    });
   }
 
-  set(key: string, value: any, ttl?: number) {
-    return this.redis.set(
-      key,
-      JSON.stringify(value),
-      ttl ? 'EX' : undefined,
-      ttl,
-    );
+  async get<T = any>(key: string): Promise<T | null> {
+    const value = await this.client.get(key);
+    return value ? JSON.parse(value) : null;
   }
 
-  del(key: string) {
-    return this.redis.del(key);
+  async set(key: string, value: any, ttlSeconds?: number) {
+    const data = JSON.stringify(value);
+
+    if (ttlSeconds) {
+      return this.client.set(key, data, 'EX', ttlSeconds);
+    }
+
+    return this.client.set(key, data);
+  }
+
+  async del(key: string) {
+    return this.client.del(key);
+  }
+
+  async exists(key: string) {
+    return this.client.exists(key);
+  }
+
+  getClient() {
+    return this.client;
+  }
+
+  async onModuleDestroy() {
+    await this.client.quit();
   }
 }

@@ -9,12 +9,14 @@ import { AuthGuard } from '../guards/auth.guard';
 import { TokenUtil } from './utils/token.util';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { RolesModule } from 'src/roles/roles.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
     UsersModule,
     SessionsModule,
     RolesModule,
+    RedisModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },
