@@ -23,7 +23,7 @@ export class SessionsService {
     });
   }
 
-  async create(data: { userId: string }) {
+  async create(data: { userId: string; ip: string; userAgent: string }) {
     return this.sessionRepo.save(data);
   }
 

@@ -40,7 +40,7 @@ export class AuthService {
     return user;
   }
 
-  async login(username: string, password: string) {
+  async login(req: any, username: string, password: string) {
     const user = await this.usersService.findOne(username);
     const permissions = user.roleEntities.flatMap((role) =>
       role.permissions.map((p) => p.name),
@@ -55,9 +55,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const ip = req.ip;
+    const userAgent = req.headers['user-agent'];
+
     // 1. CREATE SESSION FIRST
     const session = await this.sessionsService.create({
       userId: user.id,
+      ip,
+      userAgent,
     });
 
     const roles = user.roleEntities.map((role) => role.name);
