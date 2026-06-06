@@ -268,8 +268,8 @@ export class AuthService {
       user.roleEntities = [role];
 
       await this.usersService.saveUser(user);
+      user = await this.usersService.findOne(user.username);
     }
-
     const session = await this.sessionsService.create({
       userId: user.id,
       ip: req.ip,
@@ -277,7 +277,6 @@ export class AuthService {
     });
 
     const tokens = await this.issueTokens(user, session.id);
-
     await this.redisService.set(
       `session:${session.id}`,
       { userId: user.id, revokedAt: null },
@@ -299,7 +298,6 @@ export class AuthService {
     const permissions = user.roleEntities.flatMap((r) =>
       r.permissions.map((p) => p.name),
     );
-
     const roles = user.roleEntities.map((r) => r.name);
 
     const payload = {
