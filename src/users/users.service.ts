@@ -67,4 +67,10 @@ export class UsersService {
   remove(id: string) {
     return this.userRepo.delete(id);
   }
+
+  async findOneByGoogleId(googleId: string) {
+    return this.userRepo.findOne({
+      where: { googleId },
+    });
+  }
 }

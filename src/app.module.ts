@@ -14,9 +14,13 @@ import { Role } from './roles/entities/role.entity';
 import { Permission } from './permissions/entities/permission.entity';
 import { SeedService } from './seeds/seed.service';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forFeature([Role, Permission]),
     AuthModule,
     UsersModule,

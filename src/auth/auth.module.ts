@@ -10,6 +10,7 @@ import { TokenUtil } from './utils/token.util';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { RolesModule } from 'src/roles/roles.module';
 import { RedisModule } from 'src/redis/redis.module';
+import { GoogleStrategy } from 'src/strategies/google.strategy';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { RedisModule } from 'src/redis/redis.module';
     }),
   ],
   providers: [
+    GoogleStrategy,
     AuthService,
     TokenUtil,
     {
