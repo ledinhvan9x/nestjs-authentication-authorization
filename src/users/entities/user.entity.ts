@@ -17,8 +17,8 @@ export class User {
   @Column({ unique: true })
   username: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true })
+  password: string | null;
 
   @ManyToMany(() => Role)
   @JoinTable({
@@ -37,4 +37,16 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({
+    nullable: true,
+    unique: true,
+  })
+  email: string | null;
+
+  @Column({
+    nullable: true,
+    unique: true,
+  })
+  googleId: string | null;
 }

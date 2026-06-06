@@ -14,6 +14,7 @@ import { RolesService } from 'src/roles/roles.service';
 import { RedisService } from 'src/redis/redis.service';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import * as bcrypt from 'bcrypt';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -242,5 +243,76 @@ export class AuthService {
     return {
       message: 'Logged out all devices',
     };
+  }
+
+  async googleLogin(
+    googleUser: {
+      googleId: string;
+      email?: string;
+      name?: string;
+    },
+    req: any,
+  ) {
+    let user = await this.usersService.findOneByGoogleId(googleUser.googleId);
+
+    if (!user) {
+      user = await this.usersService.create({
+        googleId: googleUser.googleId,
+        email: googleUser.email ?? null,
+        username: googleUser.name,
+        password: null,
+      });
+
+      const role = await this.rolesService.findByName('admin');
+
+      user.roleEntities = [role];
+
+      await this.usersService.saveUser(user);
+    }
+
+    const session = await this.sessionsService.create({
+      userId: user.id,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    const tokens = await this.issueTokens(user, session.id);
+
+    await this.redisService.set(
+      `session:${session.id}`,
+      { userId: user.id, revokedAt: null },
+      60 * 60 * 24 * 7,
+    );
+
+    await this.sessionsService.updateRefreshToken(
+      session.id,
+      await PasswordUtil.hash(tokens.refreshToken),
+    );
+
+    return {
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+    };
+  }
+
+  private async issueTokens(user: User, sessionId: string) {
+    const permissions = user.roleEntities.flatMap((r) =>
+      r.permissions.map((p) => p.name),
+    );
+
+    const roles = user.roleEntities.map((r) => r.name);
+
+    const payload = {
+      sub: user.id,
+      sessionId,
+      username: user.username,
+      roles,
+      permissions,
+    };
+
+    const accessToken = await this.tokenUtil.generateAccessToken(payload);
+    const refreshToken = await this.tokenUtil.generateRefreshToken(payload);
+
+    return { accessToken, refreshToken };
   }
 }

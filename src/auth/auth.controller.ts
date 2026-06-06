@@ -7,12 +7,14 @@ import {
   Get,
   Req,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from '../decorators/public.decorator';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { ChangePasswordDto } from './dtos/change-password.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -74,5 +76,19 @@ export class AuthController {
   @Post('logout-all')
   logoutAll(@CurrentUser() user: any) {
     return this.authService.logoutAll(user);
+  }
+
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // redirect to Google
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req) {
+    return this.authService.googleLogin(req.user, req);
   }
 }
