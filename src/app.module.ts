@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { RandomModule } from './random/random.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 // import { APP_GUARD } from '@nestjs/core';
 // import { RolesGuard } from './guards/roles.guard';
@@ -24,7 +23,6 @@ import { ConfigModule } from '@nestjs/config';
     TypeOrmModule.forFeature([Role, Permission]),
     AuthModule,
     UsersModule,
-    RandomModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
