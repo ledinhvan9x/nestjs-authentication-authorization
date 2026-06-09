@@ -55,11 +55,9 @@ export class SeedService {
       userRole = await this.rolesRepo.save({ name: 'user' });
     }
 
-    // admin = full permissions
     adminRole.permissions = permissionEntities;
     await this.rolesRepo.save(adminRole);
 
-    // user = only read
     const userRead = permissionEntities.find((p) => p.name === 'user:read');
 
     userRole.permissions = userRead ? [userRead] : [];
