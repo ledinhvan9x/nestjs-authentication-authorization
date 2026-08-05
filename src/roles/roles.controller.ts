@@ -45,6 +45,7 @@ export class RolesController {
 
     return this.userService.saveUser(user);
   }
+  
   @Public()
   @Post(':roleId/permissions/:permissionId')
   assignPermission(
